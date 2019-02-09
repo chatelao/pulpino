@@ -1,0 +1,71 @@
+#=========================================================================
+# Travis CI Configuration
+#=========================================================================
+# This file configures Travis CI to automatically run tests for this RTL
+# project everytime a commit is made.
+
+# Prefer use of container-based environment as they start up faster and
+# provide more RAM and CPU cores.
+
+sudo: true
+
+# Install the build requirements
+addons:
+  apt:
+   sources:
+    # For gcc-4.8
+    - ubuntu-toolchain-r-test
+   packages:
+    # Dependencies from tutorial
+    - autoconf
+    - automake
+    - autotools-dev
+    - curl
+    - libmpc-dev
+    - libmpfr-dev
+    - libgmp-dev
+    - gawk
+    - build-essential
+    - bison
+    - flex
+    - texinfo
+    - gperf
+    - libncurses5-dev
+    - libusb-1.0-0
+    - libboost-dev
+    # Need gcc-4.8
+    - gcc-4.8
+    - g++-4.8
+
+    # Install doc to pdf conversion
+    - wv
+    - texlive-base
+    - texlive-latex-base
+    - ghostscript
+    
+    - cups-pdf
+
+install:
+ - git clone --branch stable --single-branch http://git.veripool.org/git/verilator
+ - cd verilator
+ - autoconf
+ - ./configure
+ - make
+ - sudo make install
+ - export VERILATOR_ROOT=${PWD}
+ - export PATH=${VERILATOR_ROOT}/bin:$PATH
+ - verilator -V
+
+after_install:
+ - cd ${TRAVIS_BUILD_DIR}/doc
+ - wvPDF user_manual.doc user_manual.pdf
+ - ls -ltr
+ - oowriter -pt pdf user_manual.doc
+ - ls -ltr
+
+before_script:
+ - cd ${TRAVIS_BUILD_DIR}/verilator-model
+ - make
+ 
+script:
+ - testbench
